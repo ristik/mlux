@@ -3,7 +3,10 @@
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use crossterm::{
     ExecutableCommand, QueueableCommand, cursor,
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{
+        DisableMouseCapture, EnableMouseCapture, KeyboardEnhancementFlags,
+        PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
+    },
     style::{self, Stylize},
     terminal,
 };
@@ -23,6 +26,7 @@ use crate::frame::VisibleTiles;
 pub(super) struct RawGuard {
     cleaned: bool,
     mouse: bool,
+    kbd_enhanced: bool,
 }
 
 impl RawGuard {
@@ -33,9 +37,17 @@ impl RawGuard {
             stdout().execute(EnableMouseCapture)?;
         }
         stdout().execute(cursor::Hide)?;
+        // Kitty keyboard protocol (when supported) lets us tell Shift+Space from Space.
+        let kbd_enhanced = terminal::supports_keyboard_enhancement().unwrap_or(false)
+            && stdout()
+                .execute(PushKeyboardEnhancementFlags(
+                    KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES,
+                ))
+                .is_ok();
         Ok(Self {
             cleaned: false,
             mouse,
+            kbd_enhanced,
         })
     }
 
@@ -47,6 +59,9 @@ impl RawGuard {
         let mut out = stdout();
         let _ = write!(out, "\x1b_Ga=d,d=A,q=2\x1b\\");
         let _ = out.execute(cursor::Show);
+        if self.kbd_enhanced {
+            let _ = out.execute(PopKeyboardEnhancementFlags);
+        }
         if self.mouse {
             let _ = out.execute(DisableMouseCapture);
         }

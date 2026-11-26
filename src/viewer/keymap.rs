@@ -56,6 +56,8 @@ pub(super) enum Action {
     ScrollUp(u32),
     HalfPageDown(u32),
     HalfPageUp(u32),
+    PageDown(u32),
+    PageUp(u32),
     JumpToTop,
     JumpToBottom,
     JumpToLine(u32),
@@ -134,6 +136,20 @@ pub(super) fn map_key_event(key: KeyEvent, acc: &mut InputAccumulator) -> Option
         (KeyCode::Char('u'), _) => {
             let count = acc.take().unwrap_or(1);
             Some(Action::HalfPageUp(count))
+        }
+        // Full page up: Shift+Space (needs kitty keyboard protocol), PageUp
+        (KeyCode::Char(' '), m) if m.contains(KeyModifiers::SHIFT) => {
+            let count = acc.take().unwrap_or(1);
+            Some(Action::PageUp(count))
+        }
+        (KeyCode::PageUp, _) => {
+            let count = acc.take().unwrap_or(1);
+            Some(Action::PageUp(count))
+        }
+        // Full page down: Space, PageDown
+        (KeyCode::Char(' '), KeyModifiers::NONE) | (KeyCode::PageDown, _) => {
+            let count = acc.take().unwrap_or(1);
+            Some(Action::PageDown(count))
         }
         // 先頭 / ジャンプ
         (KeyCode::Char('g'), _) => match acc.take() {
@@ -1056,5 +1072,16 @@ mod tests {
             KeyModifiers::NONE,
         ));
         assert!(a.is_none());
+    }
+
+    #[test]
+    fn space_pages_down_and_shift_space_pages_up() {
+        let mut acc = InputAccumulator::new();
+        let a = map_key_event(key(KeyCode::Char(' '), KeyModifiers::NONE), &mut acc);
+        assert!(matches!(a, Some(Action::PageDown(1))));
+        let a = map_key_event(key(KeyCode::Char(' '), KeyModifiers::SHIFT), &mut acc);
+        assert!(matches!(a, Some(Action::PageUp(1))));
+        let a = map_key_event(key(KeyCode::PageDown, KeyModifiers::NONE), &mut acc);
+        assert!(matches!(a, Some(Action::PageDown(1))));
     }
 }

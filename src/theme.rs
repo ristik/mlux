@@ -167,6 +167,36 @@ pub const THEMES: &[ThemeEntry] = &[
             sequence_activation_border: "#94A3B8",
         },
     },
+    ThemeEntry {
+        name: "paper",
+        source: include_str!("../themes/paper.typ"),
+        data_files: &[(
+            "catppuccin-latte.tmTheme",
+            include_bytes!("../themes/catppuccin-latte.tmTheme"),
+        )],
+        sidebar_bg: "#f0f0f0",
+        sidebar_fg: "#333333",
+        mermaid: MermaidColors {
+            background: "#FFFFFF",
+            primary_color: "#F8FAFC",
+            secondary_color: "#E2E8F0",
+            tertiary_color: "#FFFFFF",
+            primary_text_color: "#000000",
+            text_color: "#000000",
+            primary_border_color: "#475569",
+            line_color: "#334155",
+            edge_label_background: "#FFFFFF",
+            cluster_background: "#F1F5F9",
+            cluster_border: "#CBD5E1",
+            sequence_actor_fill: "#F8FAFC",
+            sequence_actor_border: "#475569",
+            sequence_actor_line: "#334155",
+            sequence_note_fill: "#FFF7ED",
+            sequence_note_border: "#FDBA74",
+            sequence_activation_fill: "#E2E8F0",
+            sequence_activation_border: "#475569",
+        },
+    },
 ];
 
 /// Default theme name.
@@ -181,13 +211,13 @@ pub fn resolve_theme_name(name: &str, is_light: bool, has_cjk: bool) -> &str {
     let base = match name {
         "auto" => {
             if is_light {
-                "catppuccin-latte"
+                return "paper";
             } else {
                 "catppuccin"
             }
         }
         "dark" => "catppuccin",
-        "light" => "catppuccin-latte",
+        "light" => return "paper",
         _ => return name,
     };
     if !has_cjk && let Some((_, latin)) = LATIN_VARIANTS.iter().find(|(b, _)| *b == base) {
@@ -294,7 +324,7 @@ mod tests {
 
     #[test]
     fn resolve_auto_light() {
-        assert_eq!(resolve_theme_name("auto", true, true), "catppuccin-latte");
+        assert_eq!(resolve_theme_name("auto", true, true), "paper");
     }
 
     #[test]
@@ -314,8 +344,8 @@ mod tests {
 
     #[test]
     fn resolve_light_alias() {
-        assert_eq!(resolve_theme_name("light", false, true), "catppuccin-latte");
-        assert_eq!(resolve_theme_name("light", true, true), "catppuccin-latte");
+        assert_eq!(resolve_theme_name("light", false, true), "paper");
+        assert_eq!(resolve_theme_name("light", true, true), "paper");
     }
 
     #[test]
@@ -325,10 +355,7 @@ mod tests {
 
     #[test]
     fn resolve_auto_light_latin() {
-        assert_eq!(
-            resolve_theme_name("auto", true, false),
-            "catppuccin-latte-latin"
-        );
+        assert_eq!(resolve_theme_name("auto", true, false), "paper");
     }
 
     #[test]
@@ -338,10 +365,7 @@ mod tests {
 
     #[test]
     fn resolve_light_alias_latin() {
-        assert_eq!(
-            resolve_theme_name("light", false, false),
-            "catppuccin-latte-latin"
-        );
+        assert_eq!(resolve_theme_name("light", false, false), "paper");
     }
 
     #[test]

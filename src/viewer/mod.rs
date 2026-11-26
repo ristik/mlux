@@ -397,12 +397,12 @@ pub fn run(
                                 ViewerMode::Normal => match map_key_event(key_event, &mut acc) {
                                     Some(a) => {
                                         let dir = match &a {
-                                            Action::ScrollDown(_) | Action::HalfPageDown(_) => {
-                                                Some(ScrollDirection::Down)
-                                            }
-                                            Action::ScrollUp(_) | Action::HalfPageUp(_) => {
-                                                Some(ScrollDirection::Up)
-                                            }
+                                            Action::ScrollDown(_)
+                                            | Action::HalfPageDown(_)
+                                            | Action::PageDown(_) => Some(ScrollDirection::Down),
+                                            Action::ScrollUp(_)
+                                            | Action::HalfPageUp(_)
+                                            | Action::PageUp(_) => Some(ScrollDirection::Up),
                                             _ => None,
                                         };
                                         let scroll_step = match dir {

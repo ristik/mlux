@@ -123,7 +123,9 @@ pub fn markdown_to_typst(
     options.insert(Options::ENABLE_TABLES);
     options.insert(Options::ENABLE_STRIKETHROUGH);
     options.insert(Options::ENABLE_MATH);
-    let parser = Parser::new_ext(markdown, options);
+    // Rewrite `\(..\)` / `\[..\]` to `$`/`$$`; event ranges are mapped back below.
+    let (normalized, offset_map) = super::math_delim::normalize_math_delimiters(markdown);
+    let parser = Parser::new_ext(&normalized, options);
 
     let mut output = String::new();
     let mut stack: Vec<Container> = Vec::new();
@@ -155,6 +157,7 @@ pub fn markdown_to_typst(
     let mut table_cell_spans: Vec<Vec<PendingSpan>> = Vec::new();
 
     for (event, md_range) in parser.into_offset_iter() {
+        let md_range = offset_map.map_range(md_range);
         match event {
             // === Block-level Start tags ===
             Event::Start(Tag::Paragraph) => {
@@ -1491,6 +1494,20 @@ mod tests {
         assert!(
             !typst.contains("\\$"),
             "math delimiters should not be escaped, got: {typst}"
+        );
+    }
+
+    #[test]
+    fn test_paren_bracket_math_delimiters() {
+        let typst =
+            md_to_typst("Inline \\(\\frac{a}{b}_1\\) here.\n\n\\[\n\\sum_{i=1}^{n} x_i\n\\]\n");
+        assert!(
+            typst.contains("frac") && typst.contains("sum"),
+            "got: {typst}"
+        );
+        assert!(
+            !typst.contains("\\("),
+            "delimiters should be consumed, got: {typst}"
         );
     }
 

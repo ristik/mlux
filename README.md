@@ -72,6 +72,7 @@ mlux --debug input.md
 |-----|--------|
 | `j` / `k` | Scroll down / up |
 | `d` / `u` | Half-page down / up |
+| `Space` / `Shift-Space` | Page down / up (`PageDown` / `PageUp` too; Shift-Space needs a terminal with the kitty keyboard protocol) |
 | `g` / `G` | Jump to top / bottom |
 | `[N]g` / `[N]G` | Jump to line N |
 | `/` / `?` | Search forward / backward (regex) |

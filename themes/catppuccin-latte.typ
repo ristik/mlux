@@ -61,7 +61,7 @@
   block(below: 0.9em, above: 1.4em, text(weight: "bold", fill: rgb("#5c5f77"), it.body)))
 
 // Math: tuned to balance with body font
-#show math.equation: set text(font: "STIX Two Math", size: 13pt * scale)
+#show math.equation: set text(font: "STIX Two Math", size: 14pt * scale)
 
 // Horizontal rule: Surface 2
 #show line: set line(stroke: 1pt * scale + rgb("#acb0be"))

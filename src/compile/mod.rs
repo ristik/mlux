@@ -4,6 +4,7 @@ mod image;
 mod markup;
 mod markup_html;
 mod markup_util;
+mod math_delim;
 mod typst;
 mod world;
 

@@ -209,6 +209,26 @@ pub(super) fn handle(action: Action, ctx: &mut NormalCtx) -> Vec<Effect> {
                 direction: ScrollDirection::Down,
             }]
         }
+        Action::PageDown(count) => {
+            let cur = ctx.scroll.derived_target(ctx.max_scroll);
+            let y = (cur + count * 2 * ctx.half_page).min(ctx.max_scroll);
+            let delta = y as i32 - cur as i32;
+            debug!("scroll page-down: target {cur} → {y} (count={count}, delta={delta})");
+            vec![Effect::ScrollImpulse {
+                delta_px: delta,
+                direction: ScrollDirection::Down,
+            }]
+        }
+        Action::PageUp(count) => {
+            let cur = ctx.scroll.derived_target(ctx.max_scroll);
+            let y = cur.saturating_sub(count * 2 * ctx.half_page);
+            let delta = y as i32 - cur as i32;
+            debug!("scroll page-up: target {cur} → {y} (count={count}, delta={delta})");
+            vec![Effect::ScrollImpulse {
+                delta_px: delta,
+                direction: ScrollDirection::Up,
+            }]
+        }
         Action::HalfPageUp(count) => {
             let cur = ctx.scroll.derived_target(ctx.max_scroll);
             let y = cur.saturating_sub(count * ctx.half_page);
@@ -584,6 +604,24 @@ mod tests {
             effects[0],
             Effect::ScrollImpulse {
                 delta_px: 200,
+                direction: ScrollDirection::Down,
+            }
+        ));
+    }
+
+    #[test]
+    fn page_down_is_two_half_pages() {
+        let state = make_state(0);
+        let vls = vec![make_vl(0)];
+        let ci = empty_ci();
+        let doc = DocumentQuery::new("", &vls, &ci, 0);
+        let mut ls = None;
+        let mut ctx = make_ctx(&state, &doc, &mut ls);
+        let effects = handle(Action::PageDown(1), &mut ctx);
+        assert!(matches!(
+            effects[0],
+            Effect::ScrollImpulse {
+                delta_px: 400,
                 direction: ScrollDirection::Down,
             }
         ));
